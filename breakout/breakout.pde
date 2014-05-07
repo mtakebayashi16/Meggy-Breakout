@@ -9,15 +9,17 @@ void setup(){
   MeggyJrSimpleSetup();        //Required code line 2 of 2
 }
 
+int counter = 0;
+int ballSpeed = 3;              //speed of the ball, the higher the speed, the slower the ball
 int ballX = 0;
 int ballY = 4;
-int life = 8;                    //the value is for the Aux LEDs, instead of the actual number of lives, the game starts with three lives
+int life = 8;        //the value is for the Aux LEDs, instead of the actual number of lives, the game starts with three lives
 boolean gameOver = false;
 int level = 1;
 int widthMin = 0;
 int widthMax = 8;
 int brickRows = 2;
-int bricksLeft;                //number of bricks that haven't been broken
+int bricksLeft = 16;                //number of bricks that haven't been broken yet
 
 struct Point {
   int x;
@@ -31,15 +33,32 @@ Point s3 = {2,0};
 Point platformArray [3] = {s1, s2, s3};
 
 void loop(){
+  if (counter > 20){
+    counter = 0;
+  }
+  else{
+    counter ++;
+  }
   SetAuxLEDs(life-1);        //displays the lives left on the aux LEDs
   drawPlatform();              //creates moving platform on bottom of screen
-  DisplaySlate();
-  delay(100);
-  ClearSlate();
-  updatePlatform();
-  
   drawBricks();
+  
+  if (counter % 3 == 0)    //determines how many times the loop runs before the platform can move
+    movePlatform();
+  
   drawBall();
+  
+  if (counter % ballSpeed == 1)        //controls the speed of the ball, speed changes depending on level
+    updateBall();
+
+  DisplaySlate();
+
+  if (ReadPx(ballX, ballY) == Red){
+    bricksLeft --; 
+  }
+  
+  if (bricksLeft = 0)
+    levelUp();
   
   if (life = 1)                  //when run out of lives, game over
     gameOver = true;
@@ -72,7 +91,7 @@ void drawPlatform(){            //creates moving platform on bottom of screen
   }
 }
 
-void updatePlatform(){                 //shifts platform on the x axis
+void movePlatform(){                 //shifts platform on the x axis
   for (int i = 3; i > 0; i--){
    platformArray[i].x = platformArray[i-1].x;
    platformArray[i].y = platformArray[i-1].y;
@@ -97,12 +116,20 @@ void drawBricks(){                          //creates the bricks on the top of t
   }
 }
 
-
+void levelUp(){                            
+  if (ballSpeed < 1){        //ball speed increases when level up (doesn't get faster after a certain point
+    ballSpeed = 1;
+  }
+  else{
+   ballSpeed --; 
+  }
+   
+  drawBricks(); 
+}
 
 //ball moves freely even if there is no player input
 //allows ball to bounce when it hits the platform or the walls or the blocks
 //bricks dissapear when hit by the dot
-//ball speed increases when level up (doesn't get faster after a certain point
 //at level 2, extra layer of bricks are added
 //at certain level, an extra ball is added
 //creates powerup, will give an extra life
