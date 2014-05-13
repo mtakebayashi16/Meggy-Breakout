@@ -16,21 +16,10 @@ int ballY = 4;
 int life = 8;        //the value is for the Aux LEDs, instead of the actual number of lives, the game starts with three lives
 boolean gameOver = false;
 int level = 1;
-int widthMin = 0;
-int widthMax = 8;
 int brickRows = 2;
 int bricksLeft = 16;                //number of bricks that haven't been broken yet
+int platformX = 0;            //x coord for platform
 
-struct Point {
-  int x;
-  int y;
-};
-
-Point s1 = {0,0};
-Point s2 = {1,0};
-Point s3 = {2,0};
-
-Point platformArray [3] = {s1, s2, s3};
 
 void loop(){
   if (counter > 20){
@@ -48,8 +37,8 @@ void loop(){
   
   drawBall();
   
-  if (counter % ballSpeed == 1)        //controls the speed of the ball, speed changes depending on level
-    updateBall();
+//  if (counter % ballSpeed == 1)        //controls the speed of the ball, speed changes depending on level
+//    updateBall();
 
   DisplaySlate();
 
@@ -66,36 +55,31 @@ void loop(){
   if (gameOver){                    //game over sequence
     ClearSlate();
     delay(2000);
-    Tone_Start(ToneA3, 500);
-    Tone_Start(ToneC3, 500);
+  //  Tone_Start(ToneA3, 500);
+   // Tone_Start(ToneC3, 500);
     level = 1;                    //resets level
     life = 8;                     //resets number of lives
   }
 }                  //ends loop
 
 void drawPlatform(){            //creates moving platform on bottom of screen
-  for (int i = 0; i < 3; i++){
-    DrawPx(platformArray[i].x, 0, Yellow);
-    CheckButtonsDown();          //check buttons being pressed, shifts platform on the x axis
-    if(Button_Left)  
-      platformArray[0].x --;
-    if(Button_Right) 
-      platformArray[3].x ++;
-  
-    if (platformArray[0].x < 0){          //creates boundaries, keeps the platform on screen
-       platformArray[0].x = 0;
-       
-     }
-    if (platformArray[3].x > 7)
-       platformArray[3].x = 7;
-  }
+  DrawPx(platformX, 0, Yellow);
+  DrawPx(platformX+1, 0, Yellow);
+  DrawPx(platformX+2, 0, Yellow);
 }
 
 void movePlatform(){                 //shifts platform on the x axis
-  for (int i = 3; i > 0; i--){
-   platformArray[i].x = platformArray[i-1].x;
-   platformArray[i].y = platformArray[i-1].y;
-  }
+   CheckButtonsPress();
+  if (Button_Right)
+    platformX ++;
+  if (Button_Left)
+    platformX --;
+    
+  if (platformX < 0)
+    platformX = 0;
+   
+   if (platformX+2 > 7)
+     platformX = 5;
 }
 
 
@@ -109,9 +93,9 @@ void updateBall(){                 //if the ball touches the bottom of the scree
 }
 
 void drawBricks(){                          //creates the bricks on the top of the screen
-  for (int i = 1; i < brickRows; i++){
+  for (int i = 7; i > 4; i++){
     for (int x = 0; x < 8; x++){
-      DrawPx(x, 7-i, Red);
+      DrawPx(x, i, Red);
     }
   }
 }
