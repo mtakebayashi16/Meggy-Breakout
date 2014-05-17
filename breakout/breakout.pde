@@ -16,7 +16,7 @@ void setup(){
   MeggyJrSimpleSetup();        //Required code line 2 of 2
 }
 
-int marker = 15;            //marks point in the array to indicate how many bricks are being shown
+int marker = 7;            //marks point in the array to indicate how many bricks are being shown
 int dotX = 0;
 int dotY = 4;
 int directions = 315;      //the ball starts by going diagonally down/right
@@ -26,48 +26,37 @@ boolean gameOver = false;
 int level = 1;
 int bricksLeft = 16;
 
-struct Platform{        //creating an array for the platform, makes collision detection easier
+struct Platform{        
   int x;
   int y;
 };
 
-Platform p1 = {0,0};      //platform coordinates
+Platform p1 = {0,0};      //platform coordinates, creates the platform array
 Platform p2 = {1,0};
 Platform p3 = {2,0};
 
 Platform platformArray[3] = {p1, p2, p3};
 
-struct Brick{          //creating an array for the bricks
+struct Brick{         
   int x;
   int y;
+  int color;
 };
 
-Brick s1 = {0,7};          //coordinates for each brick
-Brick s2 = {1,7};
-Brick s3 = {2,7};
-Brick s4 = {3,7};
-Brick s5 = {4,7};
-Brick s6 = {5,7};
-Brick s7 = {6,7};
-Brick s8 = {7,7};
-Brick s9 = {0,6};
-Brick s10 = {1,6};
-Brick s11 = {2,6};
-Brick s12 = {3,6};
-Brick s13 = {4,6};
-Brick s14 = {5,6};
-Brick s15 = {6,6};
-Brick s16 = {7,6};
-Brick s17 = {0,5};
-Brick s18 = {1,5};
-Brick s19 = {2,5};
-Brick s20 = {3,5};
-Brick s21 = {4,5};
-Brick s22 = {5,5};
-Brick s23 = {6,5};
-Brick s24 = {7,5};
+Brick s1 = {0,7,1};          //coordinates for each brick, creates the brick array (only has coordinates for every other brick)
+Brick s2 = {2,7,4};
+Brick s3 = {4,7,6};
+Brick s4 = {6,7,5};
+Brick s5 = {0,6,5};
+Brick s6 = {2,6,6};
+Brick s7 = {4,6,4};
+Brick s8 = {6,6,1};
+Brick s9 = {0,5,1};
+Brick s10 = {2,5,4};
+Brick s11 = {4,5,6};
+Brick s12 = {6,5,5};
 
-Brick brickArray [24] =  {s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24};
+Brick brickArray [12] =  {s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12};
 
 void loop(){
   SetAuxLEDs(life-1);        //displays the lives left on the aux LEDs
@@ -91,7 +80,8 @@ void loop(){
 
 void drawBricks(){
   for (int i = 0; i <= marker; i++){
-    DrawPx(brickArray[i].x, brickArray[i].y, Red); 
+    DrawPx(brickArray[i].x, brickArray[i].y, brickArray[i].color);
+    DrawPx(brickArray[i].x+1,brickArray[i].y, brickArray[i].color); 
   }
 }                //end drawBricks
 
@@ -105,15 +95,10 @@ void movePlatform(){
   CheckButtonsDown();              //only moves the platform when counter%300=0, I found it was smoother than having CheckButtonsPress,
   for (int i = 0; i < 3; i++){
     if (counter % 250 == 0){        // so now the player can hold down the directions instead of having to press every time
-      if (Button_Right)
+      if (Button_Right && platformArray[2].x < 7)
          platformArray[i].x ++;          //moves platform right when Right button is pressed
-      if (Button_Left)
-         platformArray[i].x --;           //moves platform left when Left button is pressed
-    
-      if (platformArray[0].x < 0)        //keeps platform in boundaries
-           platformArray[i].x --;
-       if (platformArray[2].x > 7)
-         platformArray[i].x++;
+       if (Button_Left && platformArray[0].x > 0)
+         platformArray[i].x --;             //moves platform left when Left button is pressed 
     }
   }
 }                        //end movePlatform
@@ -191,38 +176,38 @@ void checkBoundaries(){          //keeps ball in ball boundaries
     
   if (dotX > 7){              //for when the ball hits the right side
     dotX = 7;
-    if (directions = 0)
+    if (directions == 0)
       directions = 225;    //if the ball is going directly right, it will go left/down
-    if (directions = 45)
+    if (directions == 45)
       directions = 135;     //if the ball is going right/up, it will go left/up
-    if (directions = 315)
+    if (directions == 315)
       directions = 225;     //if the ball is going right/down, it will go left/down
   }
   if (dotX <  0){             //for when the ball hits the left side
     dotX = 0;
-    if (directions = 225)
+    if (directions == 225)
       directions = 315;    //if the ball is going left/down, it will go right/down
-    if (directions = 135)
+    if (directions == 135)
       directions = 45;    //if the ball is going left/up, it will go right/up
-    if (directions = 180)
+    if (directions == 180)
       directions = 315;    //if the ball is going left, it will go right/down
   }
   if (dotY > 7){            //for when the ball hits the top of the screen
     dotY = 7;
-    if (directions = 45)
+    if (directions == 45)
       directions = 315;    //if the ball is going right/up, it will go right/down
-    if (directions = 90)
+    if (directions == 90)
       directions = 315;       //if the ball is going straight up, it will go right/down
-    if (directions = 135)
+    if (directions == 135)
       directions = 225;
   }
   if (dotY < 0){          //for when the ball hits the bottom of the screen
     dotY = 0;
-    if (directions = 225)
+    if (directions == 225)
       directions = 135;        //if the ball is going left/down, it will go left/up
-    if (directions = 270)
+    if (directions == 270)
       directions = 45;          //if the ball is going straight down, it will go right/up
-    if (directions = 315)
+    if (directions == 315)
       directions = 45;        //if the ball is going right/down, it will go left/up
    }
      
