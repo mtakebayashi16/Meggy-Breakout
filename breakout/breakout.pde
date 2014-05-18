@@ -72,7 +72,8 @@ void loop(){
   
   if (counter % 450 == 0)
     checkDirections();
-
+  
+ // collisionDetection();
   
   DisplaySlate();
   ClearSlate();
@@ -213,7 +214,21 @@ void checkBoundaries(){          //keeps ball in ball boundaries
      
 }         //end boundaries check
 
-
+void collisionDetection(){
+ for(int i = 0; i < marker; i++){
+  if (ReadPx(brickArray[i].x, brickArray[i].y) == !Dark){
+    DrawPx(brickArray[i].x, brickArray[i].y,0);
+    DrawPx(brickArray[i].x+1, brickArray[i].y,0);
+    dotY --;
+    if (directions == 45)
+      directions = 315;    //if the ball is going right/up, it will go right/down
+    if (directions == 90)
+      directions = 315;       //if the ball is going straight up, it will go right/down
+    if (directions == 135)
+      directions = 225;
+  }
+ } 
+}
 
 
 //bricks dissapear when hit by the dot
