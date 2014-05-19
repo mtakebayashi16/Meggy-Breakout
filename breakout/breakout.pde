@@ -215,7 +215,7 @@ void checkBoundaries(){          //keeps ball in ball boundaries
 }         //end boundaries check
 
 void collisionDetection(){
- for(int i = 0; i < marker; i++){
+ for(int i = 0; i <= marker; i++){
   if (dotY == brickArray[i].y && dotX == brickArray[i].x || dotY == brickArray[i].y && dotX == brickArray[i].x+1){
     dotY --;
     if (directions == 45)
@@ -225,7 +225,18 @@ void collisionDetection(){
     if (directions == 135)
       directions = 225;
   }
- } 
+ }
+ for (int i = 0; i < 3; i++){
+  if (dotY == platformArray[i].y && dotX == platformArray[i].x){
+    dotY = 1;
+    if (directions == 225)
+      directions = 135;        //if the ball is going left/down, it will go left/up
+    if (directions == 270)
+      directions = 45;          //if the ball is going straight down, it will go right/up
+    if (directions == 315)
+      directions = 45;        //if the ball is going right/down, it will go left/up
+   }
+ }
 }
 
 
