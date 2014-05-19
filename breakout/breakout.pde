@@ -17,14 +17,15 @@ void setup(){
 }
 
 int marker = 7;            //marks point in the array to indicate how many bricks are being shown
-int dotX = 0;
+int dotX = 0;              //ball coordinates
 int dotY = 4;
 int directions = 315;      //the ball starts by going diagonally down/right
 int counter = 0;        //counts times through the loop
 int life = 8;        //the value is for the Aux LEDs, instead of the actual number of lives, the game starts with three lives
 boolean gameOver = false;
-int level = 1;
-int bricksLeft = 16;
+int level = 1;              //what level the game starts at
+int bricksLeft = 7;        //how many bricks are left on screen (starts at 0 and counts up)
+int brickNumber;        //used in collision detection to determine which brick should be dark
 
 struct Platform{        
   int x;
@@ -46,15 +47,15 @@ struct Brick{
 Brick s1 = {0,7,1};          //coordinates for each brick, creates the brick array (only has coordinates for every other brick)
 Brick s2 = {2,7,4};
 Brick s3 = {4,7,6};
-Brick s4 = {6,7,5};
-Brick s5 = {0,6,5};
+Brick s4 = {6,7,1};
+Brick s5 = {0,6,4};
 Brick s6 = {2,6,6};
-Brick s7 = {4,6,4};
-Brick s8 = {6,6,1};
-Brick s9 = {0,5,1};
-Brick s10 = {2,5,4};
-Brick s11 = {4,5,6};
-Brick s12 = {6,5,5};
+Brick s7 = {4,6,1};
+Brick s8 = {6,6,4};
+Brick s9 = {0,5,6};
+Brick s10 = {2,5,1};
+Brick s11 = {4,5,4};
+Brick s12 = {6,5,6};
 
 Brick brickArray [12] =  {s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12};
 
@@ -71,9 +72,15 @@ void loop(){
   checkBoundaries();
   
   if (counter % 450 == 0)
-    checkDirections();
+    checkDirections();        //moves the ball every 450th time through the loop
   
   collisionDetection();
+  
+  if (bricksLeft == 0)
+    levelUp();
+  
+  if (gameOver)
+    gameRestart();
   
   DisplaySlate();
   ClearSlate();
@@ -93,9 +100,9 @@ void drawPlatform(){                //draws the platform, it is three dots wide
 }                                    //end drawPlatform
 
 void movePlatform(){
-  CheckButtonsDown();              //only moves the platform when counter%300=0, I found it was smoother than having CheckButtonsPress,
-  for (int i = 0; i < 3; i++){
-    if (counter % 250 == 0){        // so now the player can hold down the directions instead of having to press every time
+  CheckButtonsDown();              //only moves the platform every 250th time through the loop, using CheckButtonsDown is smoother than having CheckButtonsPress,
+  for (int i = 0; i < 3; i++){       //so now the player can hold down the directions instead of having to press every time
+    if (counter % 250 == 0){        
       if (Button_Right && platformArray[2].x < 7)
          platformArray[i].x ++;          //moves platform right when Right button is pressed
        if (Button_Left && platformArray[0].x > 0)
@@ -202,22 +209,19 @@ void checkBoundaries(){          //keeps ball in ball boundaries
     if (directions == 135)
       directions = 225;
   }
-  if (dotY < 0){          //for when the ball hits the bottom of the screen
-    dotY = 0;
-    if (directions == 225)
-      directions = 135;        //if the ball is going left/down, it will go left/up
-    if (directions == 270)
-      directions = 45;          //if the ball is going straight down, it will go right/up
-    if (directions == 315)
-      directions = 45;        //if the ball is going right/down, it will go left/up
-   }
-     
+  if (dotY < 0)          //for when the ball hits the bottom of the screen
+    gameOver = true;
 }         //end boundaries check
 
 void collisionDetection(){
  for(int i = 0; i <= marker; i++){
-  if (dotY == brickArray[i].y && dotX == brickArray[i].x || dotY == brickArray[i].y && dotX == brickArray[i].x+1){
-    dotY --;
+   if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks
+    bricksLeft --; 
+    brickNumber = dotX;
+    if (brickNumber % 2 == 0)
+      brickArray[brickNumber].color = 0;
+    if (brickNumber % 2 == 1)
+      brickArray[brickNumber - 1].color = 0;
     if (directions == 45)
       directions = 315;    //if the ball is going right/up, it will go right/down
     if (directions == 90)
@@ -227,20 +231,62 @@ void collisionDetection(){
   }
  }
  for (int i = 0; i < 3; i++){
-  if (dotY == platformArray[i].y && dotX == platformArray[i].x){
+  if (dotY == platformArray[i].y && dotX == platformArray[i].x){          //collision detection for the platform
     dotY = 1;
-    if (directions == 225)
-      directions = 135;        //if the ball is going left/down, it will go left/up
-    if (directions == 270)
-      directions = 45;          //if the ball is going straight down, it will go right/up
-    if (directions == 315)
-      directions = 45;        //if the ball is going right/down, it will go left/up
-   }
+    int j = random(1,3);        //random sequence to determine which way the ball bounces
+    if (directions == 225){
+      if (j == 1)              
+        directions = 135;        //if the ball is going left/down, half of the time it will go left/up
+      if (j == 2)              //half of the time the ball will go straight up
+        directions = 90;        
+    }
+    if (directions == 270){
+      if (j ==1)
+      directions = 45;        //if the ball is going straight down, half of the time it will go right/up
+      if (j == 2)                  //half of the time the ball will go straight up
+        directions = 90;
+    }
+    if (directions == 315){
+      if (j == 1)
+      directions = 45;        //if the ball is going right/down, half of the time it will go left/up
+      if (j == 2)                      //half of the time the ball will go straight up
+        directions = 90;
+    }  
+  }
  }
-}
+}      //end collision detection
+
+void levelUp(){
+  marker = 11;          //at level 2, extra layer of bricks are added
+  ClearSlate();
+  delay(200);
+  dotX = 0;            
+  dotY = 4;
+  directions = 315;  
+  bricksLeft = 11;
+  counter = 0;
+}                      //end levelUp
+
+void gameRestart(){      //resets all the variables to original settings
+  marker = 7;            
+  dotX = 0;            
+  dotY = 4;
+  directions = 315;    
+  counter = 0;       
+  life = 8;       
+  level = 1;            
+  bricksLeft = 7;
+  ClearSlate();
+  delay(2000);
+  Tone_Start(ToneC3, 700);
+  Tone_Start(ToneFs3, 700);
+  gameOver = false;
+}        //end gameRestart
 
 
+
+//reset color of bricks at gameOver
+//reset color of bricks during levelUp
 //bricks dissapear when hit by the dot
-//at level 2, extra layer of bricks are added
 //at certain level, an extra ball is added
 //creates powerup, will give an extra life
