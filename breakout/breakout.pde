@@ -216,12 +216,16 @@ void checkBoundaries(){          //keeps ball in ball boundaries
 void collisionDetection(){
  for(int i = 0; i <= marker; i++){
    if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks
-    bricksLeft --; 
-    brickNumber = dotX;
-    if (brickNumber % 2 == 0)
+    bricksLeft --;     
+    brickNumber = dotX;                   
+    if (brickNumber % 2 == 0){             //code for every other brick (so every time two bricks are erased instead of just one if the ball hits the edges)
+      brickNumber = brickNumber / 2;          //so the brickNumber correlates to the brickArray number
+      brickArray[brickNumber].color = 0;      //colours the brick "dark"
+    }
+    if (brickNumber % 2 == 1){
+      brickNumber = (brickNumber - 1) / 2;
       brickArray[brickNumber].color = 0;
-    if (brickNumber % 2 == 1)
-      brickArray[brickNumber - 1].color = 0;
+    }
     if (directions == 45)
       directions = 315;    //if the ball is going right/up, it will go right/down
     if (directions == 90)
