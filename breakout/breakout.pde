@@ -215,17 +215,27 @@ void checkBoundaries(){          //keeps ball in ball boundaries
 
 void collisionDetection(){
  for(int i = 0; i <= marker; i++){
-   if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks
-    bricksLeft --;     
+   if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks   
     brickNumber = dotX;                   
-    if (brickNumber % 2 == 0){             //code for every other brick (so every time two bricks are erased instead of just one if the ball hits the edges)
-      brickNumber = brickNumber / 2;          //so the brickNumber correlates to the brickArray number
-      brickArray[brickNumber].color = 0;      //colours the brick "dark"
+    if (dotY == 6){                          //code to make the bricks on the top row disappear
+      if (brickNumber % 2 == 0)             //code for every other brick (so every time two bricks are erased instead of just one if the ball hits the edges)
+        brickNumber = brickNumber / 2;          //so the brickNumber correlates to the brickArray number     
+      if (brickNumber % 2 == 1)                //code for the odd numbered bricks, they use a different formula to figure out which bricks to erase
+        brickNumber = (brickNumber - 1) / 2;
     }
-    if (brickNumber % 2 == 1){
-      brickNumber = (brickNumber - 1) / 2;
-      brickArray[brickNumber].color = 0;
+    if (dotY == 5){                          //code to make the bricks on the second row disappear      
+     if (brickNumber % 2 == 0)
+       brickNumber = (brickNumber / 2) + 4;
+     if (brickNumber % 2 == 1)
+       brickNumber = (brickNumber / 2) + 3.5;
     }
+    if (dotY ==4){                            //code to make the bricks on the third row disappear
+      if (brickNumber % 2 == 0)
+        brickNumber = (brickNumber / 2) + 8;
+      if (brickNumber % 2 == 1)
+        brickNumber = (brickNumber / 2) + 7.5;
+    }
+    brickArray[brickNumber].color = 0;
     if (directions == 45)
       directions = 315;    //if the ball is going right/up, it will go right/down
     if (directions == 90)
