@@ -73,11 +73,11 @@ void loop(){
   checkBoundaries();
   
   if (counter % 400 == 0)
-    checkDirections();        //moves the ball every 450th time through the loop
+    checkDirections();        //moves the ball every 400th time through the loop
   
   collisionDetection();
   
-  if (bricksLeft == 0)
+  if (bricksLeft == 1)
     levelUp();
     
   if (livesLeft == 0)
@@ -104,7 +104,7 @@ void drawPlatform(){                //draws the platform, it is three dots wide
 }                                    //end drawPlatform
 
 void movePlatform(){
-  CheckButtonsDown();    //only moves the platform every 250th time through the loop, using CheckButtonsDown is smoother than having CheckButtonsPress,
+  CheckButtonsDown();    //only moves the platform every 200th time through the loop, using CheckButtonsDown is smoother than having CheckButtonsPress,
   if (counter % 200 == 0){ 
      if (Button_Left)
        if (platformArray[0].x > 0){
@@ -123,8 +123,6 @@ void movePlatform(){
 
 
 void checkDirections(){        //keeps the ball moving in a certain direction
-  if (directions == 0)          
-    dotX ++;
   if (directions == 45){         
     dotX ++;
     dotY ++;
@@ -135,8 +133,6 @@ void checkDirections(){        //keeps the ball moving in a certain direction
     dotX --;
     dotY ++;
   }
-  if (directions == 180)
-    dotX --;
   if (directions == 225){
     dotX --;
     dotY --;
@@ -193,8 +189,6 @@ void checkBoundaries(){          //keeps ball in ball boundaries
     
   if (dotX > 7){              //for when the ball hits the right side
     dotX = 7;
-    if (directions == 0)
-      directions = 225;    //if the ball is going directly right, it will go left/down
     if (directions == 45)
       directions = 135;     //if the ball is going right/up, it will go left/up
     if (directions == 315)
@@ -206,8 +200,6 @@ void checkBoundaries(){          //keeps ball in ball boundaries
       directions = 315;    //if the ball is going left/down, it will go right/down
     if (directions == 135)
       directions = 45;    //if the ball is going left/up, it will go right/up
-    if (directions == 180)
-      directions = 315;    //if the ball is going left, it will go right/down
   }
   if (dotY > 7){            //for when the ball hits the top of the screen
     dotY = 7;
@@ -220,11 +212,12 @@ void checkBoundaries(){          //keeps ball in ball boundaries
   }
   if (dotY < 0){          //for when the ball hits the bottom of the screen
     livesLeft--;
-    ClearSlate();
-    delay(1000);
     dotX = 0;              //resets ball coordinates and direction
     dotY = 4;
     directions = 315;
+    ClearSlate();
+    delay(1000);
+    Tone_Start(ToneC3, 500);
   }
 }         //end boundaries check
 
@@ -301,6 +294,8 @@ void levelUp(){
 }                      //end levelUp
 
 void gameRestart(){      //resets all the variables to original settings
+  ClearSlate();
+  delay(2000);
   marker = 7;            
   dotX = 0;            
   dotY = 4;
@@ -312,8 +307,6 @@ void gameRestart(){      //resets all the variables to original settings
   for (int i = 0; i <=marker; i++){
     brickArray[i].color = random (1, 15);
   }
-  ClearSlate();
-  delay(2000);
   Tone_Start(ToneC3, 700);
   Tone_Start(ToneFs3, 700);
   gameOver = false;
