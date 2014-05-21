@@ -22,6 +22,7 @@ int dotY = 4;
 int directions = 315;      //the ball starts by going diagonally down/right
 int counter = 0;        //counts times through the loop
 int life = 8;        //the value is for the Aux LEDs, instead of the actual number of lives, the game starts with three lives
+int livesLeft = 3;    //indicates the number of lives the player has
 boolean gameOver = false;
 int level = 1;              //what level the game starts at
 int bricksLeft = 7;        //how many bricks are left on screen (starts at 0 and counts up)
@@ -71,13 +72,16 @@ void loop(){
   drawDot();
   checkBoundaries();
   
-  if (counter % 450 == 0)
+  if (counter % 400 == 0)
     checkDirections();        //moves the ball every 450th time through the loop
   
   collisionDetection();
   
   if (bricksLeft == 0)
     levelUp();
+    
+  if (livesLeft == 0)
+    gameOver = true;
   
   if (gameOver)
     gameRestart();
@@ -100,13 +104,19 @@ void drawPlatform(){                //draws the platform, it is three dots wide
 }                                    //end drawPlatform
 
 void movePlatform(){
-  CheckButtonsDown();              //only moves the platform every 250th time through the loop, using CheckButtonsDown is smoother than having CheckButtonsPress,
-  for (int i = 0; i < 3; i++){       //so now the player can hold down the directions instead of having to press every time
-    if (counter % 250 == 0){        
-      if (Button_Right && platformArray[2].x < 7)
-         platformArray[i].x ++;          //moves platform right when Right button is pressed
-       if (Button_Left && platformArray[0].x > 0)
-         platformArray[i].x --;             //moves platform left when Left button is pressed 
+  CheckButtonsDown();    //only moves the platform every 250th time through the loop, using CheckButtonsDown is smoother than having CheckButtonsPress,
+  if (counter % 200 == 0){ 
+     if (Button_Left)
+       if (platformArray[0].x > 0){
+         for (int i = 0; i < 3; i++){       //so now the player can hold down the directions instead of having to press every time
+           platformArray[i].x --;             //moves platform left when Left button is pressed 
+         }
+       }
+      if (Button_Right) 
+        if (platformArray[2].x < 7){
+          for (int i = 0; i < 3; i++){
+            platformArray[i].x ++;          //moves platform right when Right button is pressed
+          }
     }
   }
 }                        //end movePlatform
@@ -136,8 +146,7 @@ void checkDirections(){        //keeps the ball moving in a certain direction
   if (directions == 315){
     dotX ++;
     dotY --;
-  }
-    
+  } 
 }            //end checkDirections
 
 void drawDot(){              //draws the ball
@@ -209,14 +218,20 @@ void checkBoundaries(){          //keeps ball in ball boundaries
     if (directions == 135)
       directions = 225;
   }
-  if (dotY < 0)          //for when the ball hits the bottom of the screen
-    gameOver = true;
+  if (dotY < 0){          //for when the ball hits the bottom of the screen
+    livesLeft--;
+    ClearSlate();
+    delay(1000);
+    dotX = 0;              //resets ball coordinates and direction
+    dotY = 4;
+    directions = 315;
+  }
 }         //end boundaries check
 
 void collisionDetection(){
  for(int i = 0; i <= marker; i++){
    if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks   
-    brickNumber = dotX;                   
+    brickNumber = dotX;    
     if (dotY == 6){                          //code to make the bricks on the top row disappear
       if (brickNumber % 2 == 0)             //code for every other brick (so every time two bricks are erased instead of just one if the ball hits the edges)
         brickNumber = brickNumber / 2;          //so the brickNumber correlates to the brickArray number     
@@ -236,6 +251,7 @@ void collisionDetection(){
         brickNumber = (brickNumber / 2) + 7.5;
     }
     brickArray[brickNumber].color = 0;
+    bricksLeft --;
     if (directions == 45)
       directions = 315;    //if the ball is going right/up, it will go right/down
     if (directions == 90)
@@ -279,17 +295,23 @@ void levelUp(){
   directions = 315;  
   bricksLeft = 11;
   counter = 0;
+  for (int i = 0; i <=marker; i++){
+    brickArray[i].color = random (1, 15);
+  }
 }                      //end levelUp
 
 void gameRestart(){      //resets all the variables to original settings
   marker = 7;            
   dotX = 0;            
   dotY = 4;
-  directions = 315;    
-  counter = 0;       
-  life = 8;       
+  directions = 315;  
+  livesLeft = 3;  
+  life = 8;  
   level = 1;            
   bricksLeft = 7;
+  for (int i = 0; i <=marker; i++){
+    brickArray[i].color = random (1, 15);
+  }
   ClearSlate();
   delay(2000);
   Tone_Start(ToneC3, 700);
