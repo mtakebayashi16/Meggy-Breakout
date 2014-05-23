@@ -15,7 +15,7 @@ void setup(){
   MeggyJrSimpleSetup();        //Required code line 2 of 2
 }
 
-int marker = 7;            //marks point in the alrray to indicate how many bricks are being shown
+int marker = 7;            //marks point in the alrray to indicate how many bricks are being shown (starts at 0)
 int dotX = 0;              //ball coordinates
 int dotY = 4;
 int directions = 315;      //the ball starts by going diagonally down/right
@@ -24,7 +24,6 @@ int life = 8;        //the value is for the Aux LEDs, instead of the actual numb
 int livesLeft = 3;    //indicates the number of lives the player has
 boolean gameOver = false;
 int level = 1;              //what level the game starts at
-int bricksLeft = 7;        //how many bricks are left on screen
 int brickNumber;        //used in collision detection to determine which brick should be dark
 int gameSpeed = 400;      //speed of the ball. The higher the number, the slower the game
 int brokenBrickColor = 1;    //keeps the color for certain blocks that need special coding
@@ -76,21 +75,19 @@ void loop(){
     checkDirections();        //moves the ball every 400th time through the loop
     
   collisionDetection();
-  
-  if (bricksLeft == 0)
-    levelUp();
-  if (livesLeft == 0)
+  levelDetection();        //checks to see if no bricks are left and need to level up
+ 
+  if (livesLeft == 0)    //if the player doesn't have any more lives, game over
     gameOver = true;
   if (gameOver)
     gameRestart();
-  if (dotX < 6){                                  //added a piece of collision detection here, since it wasn't working in the method
+  if (dotX < 6){                                  //added a piece of collision detection here, since it wasn't working in the collision detection method
      brickArray[3].color = brokenBrickColor;
   }
   else{
     if (ReadPx(brickArray[3].x, brickArray[3].y) == 0)
       brokenBrickColor = 0;
   }
-
   DisplaySlate();
   ClearSlate();
 }                          //END OF LOOP
@@ -208,13 +205,18 @@ void checkBoundaries(){          //keeps ball in ball boundaries
     ClearSlate();
     delay(1000);
     Tone_Start(ToneC3, 500);
+    if (level == 1)
+      marker = 7;
+    else{
+     marker = 11; 
+    }
   }
 }         //end boundaries check
 
 void collisionDetection(){
  for(int i = 0; i <= marker; i++){
-    if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks   
-    brickNumber = dotX;    
+    if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks
+     brickNumber = dotX;
     if (dotY == 6){                          //code to make the bricks on the top row disappear
       if (brickNumber % 2 == 0)             //code for every other brick (so every time two bricks are erased instead of just one if the ball hits the edges)
         brickNumber = brickNumber / 2;          //so the brickNumber correlates to the brickArray number     
@@ -232,15 +234,14 @@ void collisionDetection(){
         brickNumber = (brickNumber / 2) + 8;
       if (brickNumber % 2 == 1)
         brickNumber = (brickNumber / 2) + 7.5;
-    }
-    if (dotX == 6 && dotY == 5 && brickArray[7].color != 0 || dotX == 7 && dotY == 5 && brickArray[7].color != 0){      //made a special rule for that one brick that wouldn't disappear
-      brickArray[7].color = 0;  
-    }
-    if (dotX == 0 && dotY == 5 && brickArray[4].color != 0 || dotX == 1 && dotY == 5 && brickArray[4].color != 0){  //more special brick code
+    } 
+    if (dotX == 6 && dotY == 5 && brickArray[7].color != 0 || dotX == 7 && dotY == 5 && brickArray[7].color != 0)      //made a special rule for brick that wouldn't disappear
+      brickArray[7].color = 0;     
+    if (dotX == 0 && dotY == 5 && brickArray[4].color != 0 || dotX == 1 && dotY == 5 && brickArray[4].color != 0)  //more special brick code
       brickArray[4].color = 0;
-    }
+    if (dotX == 2 && dotY == 4 && brickArray[9].color != 0 || dotX == 3 && dotY == 4 && brickArray[9].color != 0)     //more special brick code
+      brickArray[9].color = 0; 
     brickArray[brickNumber].color = 0;
-    bricksLeft = bricksLeft-1;
     if (directions == 45)
       directions = 315;    //if the ball is going right/up, it will go right/down
     if (directions == 90)
@@ -276,6 +277,7 @@ void collisionDetection(){
 }      //end collision detection
 
 void levelUp(){
+  level ++;
   marker = 11;          //at level 2, extra layer of bricks are added
   ClearSlate();
   delay(200);
@@ -283,7 +285,6 @@ void levelUp(){
   dotY = 4;
   directions = 315;  
   gameSpeed = gameSpeed - 30;
-  bricksLeft = 11;
   counter = 0;
   brokenBrickColor = 1;
   for (int i = 0; i <=marker; i++){
@@ -309,7 +310,6 @@ void gameRestart(){      //resets settings when player dies
   life = 8;  
   level = 1;  
   brokenBrickColor = 1;  
-  bricksLeft = 7;
   for (int i = 0; i <=marker; i++){            //resets the brick color and sets it to random
     brickArray[i].color = random (1, 15);
   }
@@ -329,5 +329,12 @@ void eraseShadow(){              //to get rid of random coloured dot that appear
   DrawPx(dotX-1, dotY, 0);
   DrawPx(dotX-1, dotY+1, 0);
   DrawPx(dotX-1, dotY-1, 0);
-  
 }    //end eraseShadow
+
+void levelDetection(){
+  if (ReadPx(0,7) == 0 && ReadPx(1,7) == 0 && ReadPx(2,7) == 0 && ReadPx(3,7) == 0 && ReadPx(4,7) == 0 && ReadPx(5,7) == 0 && ReadPx(6,7) == 0 && ReadPx(7,7) == 0
+  && ReadPx(0,6) == 0 && ReadPx(1,6) == 0 && ReadPx(2,6) == 0 && ReadPx(3,6) == 0 && ReadPx(4,6) == 0 && ReadPx(5,6) == 0 && ReadPx(6,6) == 0 && ReadPx(7,6) == 0
+  && ReadPx(0,5) == 0 && ReadPx(1,5) == 0 && ReadPx(2,5) == 0 && ReadPx(3,5) == 0 && ReadPx(4,5) == 0 && ReadPx(5,5) == 0 && ReadPx(6,5) == 0 && ReadPx(7,5) == 0){    //really long if statement checks all the spots where bricks would be located
+    levelUp();    //if all the spots are dark, the game will level up
+  }
+}
