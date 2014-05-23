@@ -1,10 +1,9 @@
+
 /*
 ball directions:
-0 = right
 45 = diagonally right/up
 90 = up
 135 = diagonally left/up
-180 = left
 225 = diagonally left/down
 270 = down
 315 = diagonally right/down
@@ -16,7 +15,7 @@ void setup(){
   MeggyJrSimpleSetup();        //Required code line 2 of 2
 }
 
-int marker = 7;            //marks point in the array to indicate how many bricks are being shown
+int marker = 7;            //marks point in the alrray to indicate how many bricks are being shown
 int dotX = 0;              //ball coordinates
 int dotY = 4;
 int directions = 315;      //the ball starts by going diagonally down/right
@@ -25,10 +24,11 @@ int life = 8;        //the value is for the Aux LEDs, instead of the actual numb
 int livesLeft = 3;    //indicates the number of lives the player has
 boolean gameOver = false;
 int level = 1;              //what level the game starts at
-int bricksLeft = 7;        //how many bricks are left on screen (starts at 0 and counts up)
+int bricksLeft = 7;        //how many bricks are left on screen
 int brickNumber;        //used in collision detection to determine which brick should be dark
+int gameSpeed = 400;      //speed of the ball. The higher the number, the slower the game
 
-struct Platform{        
+struct Platform{       
   int x;
   int y;
 };
@@ -72,12 +72,12 @@ void loop(){
   drawDot();
   checkBoundaries();
   
-  if (counter % 400 == 0)
+  if (counter % gameSpeed == 0)
     checkDirections();        //moves the ball every 400th time through the loop
   
   collisionDetection();
   
-  if (bricksLeft == 1)
+  if (bricksLeft == 0)
     levelUp();
     
   if (livesLeft == 0)
@@ -150,15 +150,6 @@ void drawDot(){              //draws the ball
 }                            //end drawDot
 
 void checkBoundaries(){          //keeps ball in ball boundaries
-  if (dotX == 0 && dotY == 0){   //if ball is in bottom left corner   
-    int j = random(1,3);        //random sequence to determine which way the ball bounces
-    if (j == 1)
-      directions = 45;       //if ball hits a corner, make it go oout diagonally
-    if (j == 2)
-      directions = 90;
-    dotX = 0;
-    dotY = 0;
-  }
   if (dotX == 0 && dotY ==7){     //if ball is in the top left corner
     int j = random(1,3);        //random sequence to determine which way the ball bounces
     if (j == 1)
@@ -167,15 +158,6 @@ void checkBoundaries(){          //keeps ball in ball boundaries
       directions = 270;
     dotX = 0;
     dotY = 7;
-  }
-  if (dotX == 7 && dotY == 0){    //if ball is in the bottom right corner
-    int j = random(1,3);        //random sequence to determine which way the ball bounces
-    if (j == 1)
-      directions = 90;       //if ball hits a corner, make it go oout diagonally
-    if (j == 2)
-      directions = 135;
-    dotX = 7;
-    dotY = 0;
   }
   if (dotX == 7 && dotY == 7){    //if ball is in the top right corner
     int j = random(1,3);        //random sequence to determine which way the ball bounces
@@ -215,6 +197,9 @@ void checkBoundaries(){          //keeps ball in ball boundaries
     dotX = 0;              //resets ball coordinates and direction
     dotY = 4;
     directions = 315;
+    eraseShadow();          //to get rid of random coloured dot that appears when the ball hits the bottom of the screen
+    DisplaySlate();
+    life = life / 2;
     ClearSlate();
     delay(1000);
     Tone_Start(ToneC3, 500);
@@ -286,6 +271,7 @@ void levelUp(){
   dotX = 0;            
   dotY = 4;
   directions = 315;  
+  gameSpeed = gameSpeed - 30;
   bricksLeft = 11;
   counter = 0;
   for (int i = 0; i <=marker; i++){
@@ -293,10 +279,17 @@ void levelUp(){
   }
 }                      //end levelUp
 
-void gameRestart(){      //resets all the variables to original settings
-  ClearSlate();
+void gameRestart(){      //resets settings when player dies
+  ClearSlate();  
+  for (int j = 0; j < 8; j++){          //colours the whole screen red
+    for (int i = 8; i >= 0; i--){
+      DrawPx(i,j,Red); 
+    }
+  }
+  DisplaySlate();
   delay(2000);
-  marker = 7;            
+  gameSpeed = 400;
+  marker = 7;                    //resets variables back to original values
   dotX = 0;            
   dotY = 4;
   directions = 315;  
@@ -304,7 +297,7 @@ void gameRestart(){      //resets all the variables to original settings
   life = 8;  
   level = 1;            
   bricksLeft = 7;
-  for (int i = 0; i <=marker; i++){
+  for (int i = 0; i <=marker; i++){            //resets the brick color and sets it to random
     brickArray[i].color = random (1, 15);
   }
   Tone_Start(ToneC3, 700);
@@ -313,6 +306,18 @@ void gameRestart(){      //resets all the variables to original settings
 }        //end gameRestart
 
 
+void eraseShadow(){              //to get rid of random coloured dot that appears when the ball hits the bottom of the screen
+  DrawPx(dotX, dotY, 0);
+  DrawPx(dotX+1, dotY, 0);
+  DrawPx(dotX+1, dotY+1, 0);
+  DrawPx(dotX+1, dotY-1, 0);
+  DrawPx(dotX, dotY+1, 0);
+  DrawPx(dotX, dotY-1, 0);
+  DrawPx(dotX-1, dotY, 0);
+  DrawPx(dotX-1, dotY+1, 0);
+  DrawPx(dotX-1, dotY-1, 0);
+  
+}    //end eraseShadow
 
 //reset color of bricks at gameOver
 //reset color of bricks during levelUp
