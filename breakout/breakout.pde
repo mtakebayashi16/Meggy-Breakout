@@ -27,6 +27,7 @@ int level = 1;              //what level the game starts at
 int bricksLeft = 7;        //how many bricks are left on screen
 int brickNumber;        //used in collision detection to determine which brick should be dark
 int gameSpeed = 400;      //speed of the ball. The higher the number, the slower the game
+int brokenBrickColor = 1;    //keeps the color for certain blocks that need special coding
 
 struct Platform{       
   int x;
@@ -65,7 +66,6 @@ void loop(){
   counter ++;
   if (counter > 1000)
     counter = 1;
-  
   drawBricks();
   drawPlatform();
   movePlatform();
@@ -74,18 +74,23 @@ void loop(){
   
   if (counter % gameSpeed == 0)
     checkDirections();        //moves the ball every 400th time through the loop
-  
+    
   collisionDetection();
   
   if (bricksLeft == 0)
     levelUp();
-    
   if (livesLeft == 0)
     gameOver = true;
-  
   if (gameOver)
     gameRestart();
-  
+  if (dotX < 6){                                  //added a piece of collision detection here, since it wasn't working in the method
+     brickArray[3].color = brokenBrickColor;
+  }
+  else{
+    if (ReadPx(brickArray[3].x, brickArray[3].y) == 0)
+      brokenBrickColor = 0;
+  }
+
   DisplaySlate();
   ClearSlate();
 }                          //END OF LOOP
@@ -217,10 +222,10 @@ void collisionDetection(){
         brickNumber = (brickNumber - 1) / 2;
     }
     if (dotY == 5){                          //code to make the bricks on the second row disappear      
-     if (brickNumber % 2 == 0)
+     if (brickNumber % 2 == 0)                  //for when dotX is even
        brickNumber = (brickNumber / 2) + 4;
-     if (brickNumber % 2 == 1)
-       brickNumber = (brickNumber / 2) + 3.5;
+     if (brickNumber % 2 == 1)                  //for when dotX is odd
+       brickNumber = (brickNumber / 2) + 3.5; 
     }
     if (dotY == 4){                            //code to make the bricks on the third row disappear
       if (brickNumber % 2 == 0)
@@ -228,11 +233,14 @@ void collisionDetection(){
       if (brickNumber % 2 == 1)
         brickNumber = (brickNumber / 2) + 7.5;
     }
-    if (dotX == 6 && dotY == 5 && brickArray[7].color != 0 || dotX == 7 && dotY == 5 && brickArray[7].color != 0)      //made a special rule for that one brick that wouldn't disappear
-     brickArray[7].color = 0; 
-     
+    if (dotX == 6 && dotY == 5 && brickArray[7].color != 0 || dotX == 7 && dotY == 5 && brickArray[7].color != 0){      //made a special rule for that one brick that wouldn't disappear
+      brickArray[7].color = 0;  
+    }
+    if (dotX == 0 && dotY == 5 && brickArray[4].color != 0 || dotX == 1 && dotY == 5 && brickArray[4].color != 0){  //more special brick code
+      brickArray[4].color = 0;
+    }
     brickArray[brickNumber].color = 0;
-    bricksLeft --;
+    bricksLeft = bricksLeft-1;
     if (directions == 45)
       directions = 315;    //if the ball is going right/up, it will go right/down
     if (directions == 90)
@@ -271,12 +279,13 @@ void levelUp(){
   marker = 11;          //at level 2, extra layer of bricks are added
   ClearSlate();
   delay(200);
-  dotX = 0;            
+  dotX = 0;                    //resets starting coordinates and direction
   dotY = 4;
   directions = 315;  
   gameSpeed = gameSpeed - 30;
   bricksLeft = 11;
   counter = 0;
+  brokenBrickColor = 1;
   for (int i = 0; i <=marker; i++){
     brickArray[i].color = random (1, 15);
   }
@@ -298,7 +307,8 @@ void gameRestart(){      //resets settings when player dies
   directions = 315;  
   livesLeft = 3;  
   life = 8;  
-  level = 1;            
+  level = 1;  
+  brokenBrickColor = 1;  
   bricksLeft = 7;
   for (int i = 0; i <=marker; i++){            //resets the brick color and sets it to random
     brickArray[i].color = random (1, 15);
