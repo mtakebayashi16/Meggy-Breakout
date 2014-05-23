@@ -208,7 +208,7 @@ void checkBoundaries(){          //keeps ball in ball boundaries
 
 void collisionDetection(){
  for(int i = 0; i <= marker; i++){
-   if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks   
+    if (ReadPx(dotX, dotY+1) != Dark){    //collision detection for the bricks   
     brickNumber = dotX;    
     if (dotY == 6){                          //code to make the bricks on the top row disappear
       if (brickNumber % 2 == 0)             //code for every other brick (so every time two bricks are erased instead of just one if the ball hits the edges)
@@ -222,12 +222,15 @@ void collisionDetection(){
      if (brickNumber % 2 == 1)
        brickNumber = (brickNumber / 2) + 3.5;
     }
-    if (dotY ==4){                            //code to make the bricks on the third row disappear
+    if (dotY == 4){                            //code to make the bricks on the third row disappear
       if (brickNumber % 2 == 0)
         brickNumber = (brickNumber / 2) + 8;
       if (brickNumber % 2 == 1)
         brickNumber = (brickNumber / 2) + 7.5;
     }
+    if (dotX == 6 && dotY == 5 && brickArray[7].color != 0 || dotX == 7 && dotY == 5 && brickArray[7].color != 0)      //made a special rule for that one brick that wouldn't disappear
+     brickArray[7].color = 0; 
+     
     brickArray[brickNumber].color = 0;
     bricksLeft --;
     if (directions == 45)
@@ -236,7 +239,7 @@ void collisionDetection(){
       directions = 315;       //if the ball is going straight up, it will go right/down
     if (directions == 135)
       directions = 225;
-  }
+  } 
  }
  for (int i = 0; i < 3; i++){
   if (dotY == platformArray[i].y && dotX == platformArray[i].x){          //collision detection for the platform
@@ -259,7 +262,7 @@ void collisionDetection(){
       directions = 45;        //if the ball is going right/down, half of the time it will go left/up
       if (j == 2)                      //half of the time the ball will go straight up
         directions = 90;
-    }  
+    }
   }
  }
 }      //end collision detection
@@ -318,9 +321,3 @@ void eraseShadow(){              //to get rid of random coloured dot that appear
   DrawPx(dotX-1, dotY-1, 0);
   
 }    //end eraseShadow
-
-//reset color of bricks at gameOver
-//reset color of bricks during levelUp
-//bricks dissapear when hit by the dot
-//at certain level, an extra ball is added
-//creates powerup, will give an extra life
